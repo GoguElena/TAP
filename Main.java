@@ -1,67 +1,83 @@
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
+class Animal {
+    int age;
+
+    Animal() {
+        this(0);
+    }
+
+    Animal(int years) {
+        this.age = years;
+    }
+
+    Animal(String sound) {
+        System.out.println("Animal sound: " + sound);
+    }
+
+    void makeSound() {
+        System.out.println("Animal makes a sound");
+    }
+
+    void eat() {
+        System.out.println("Animal eats food");
+    }
+}
+
+class Dog extends Animal {
+    String breed;
+
+    Dog() {
+        super();
+    }
+
+    Dog(int years) {
+        super(years);
+        this.breed = "Unknown";
+    }
+
+    Dog(String breed) {
+        this("Bark", breed); // Utilizăm constructorul din clasa derivată
+    }
+
+    Dog(String sound, String breed) {
+        super(sound);
+        this.breed = breed;
+    }
+
+    void wagTail() {
+        System.out.println("Dog wags its tail");
+    }
+
+    void bark() {
+        System.out.println("Dog barks");
+    }
+}
 
 public class Main {
     public static void main(String[] args) {
-        String sentence = "";
-        int wordLength = 0;
-        String mySubString = "";
+        Animal animal1 = new Animal();
+        animal1.makeSound();
+        animal1.eat();
 
-        InputStreamReader is = new InputStreamReader(System.in);
-        BufferedReader bis = new BufferedReader(is);
+        Dog dog1 = new Dog();
+        dog1.makeSound();
+        dog1.wagTail();
+        dog1.eat();
 
-        try {
-            System.out.println("Introdu propoziția: ");
-            sentence = bis.readLine();
-            System.out.println("Introdu subșirul care trebuie înlocuit:");
-            mySubString = bis.readLine();
-            System.out.println("Introdu lungimea cuvântului înlocuit:");
-            wordLength = Integer.parseInt(bis.readLine());
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        Dog dog2 = new Dog("Labrador");
+        dog2.makeSound();
+        dog2.wagTail();
+        dog2.bark();
+        dog2.eat();
 
+        Animal animal2 = new Dog(3);
+        animal2.makeSound();
+        animal2.eat();
 
-        Text myText = new Text(mySubString, sentence, wordLength);
-        myText.changeSentence();
-        System.out.println("Propoziția nouă: " + myText.getSentence());
+        Dog dog3 = new Dog("Golden Retriever");
+        dog3.makeSound();
+        dog3.wagTail();
+        dog3.bark();
+        dog3.eat();
     }
 }
-class Text {
-    private String mySentence;
-    private int charNumber;
-    private String wordToChange;
-    private String newSentence = "1.";
 
-    public Text(String wordToChange, String mySentence, int charNumber) {
-        this.mySentence = mySentence;
-        this.wordToChange = wordToChange;
-        this.charNumber = charNumber;
-    }
-    public String getSentence() {
-        return newSentence.trim();
-    }
-    public void changeSentence() {
-        int firstPos = 0;
-        int i;
-        for (i = 0; i < mySentence.length(); i++) {
-            if (mySentence.charAt(i) == ' ') {
-                String currentWord = mySentence.substring(firstPos, i);
-                if (currentWord.length() == charNumber) {
-                    newSentence = newSentence.concat(wordToChange + " ");
-                } else {
-                    newSentence = newSentence.concat(currentWord + " ");
-                }
-                firstPos = i + 1;
-            } else if (i == mySentence.length() - 1) {
-                String currentWord = mySentence.substring(firstPos);
-                if (currentWord.length() == charNumber) {
-                    newSentence = newSentence.concat(wordToChange);
-                } else {
-                    newSentence = newSentence.concat(currentWord);
-                }
-            }
-        }
-    }
-}
