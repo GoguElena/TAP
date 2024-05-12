@@ -1,216 +1,230 @@
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Scanner;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
-interface ElementTextual {
-    void setContinut(String continut);
-    String afiseaza();
-    void cautaSubsirRegexSiAfiseaza(String regex);
+interface FractionInterface {
+    void enterFraction(Scanner scanner);
+    void displayFraction();
+    FractionInterface add(FractionInterface other);
+    FractionInterface subtract(FractionInterface other);
 }
 
-abstract class ElementTextualAbstract implements ElementTextual {
-    abstract String getContinut();
+interface FractionArrayInterface {
+    void addFraction(FractionInterface fraction);
+    void displayArray();
+    FractionInterface sumFractions(List<FractionInterface> fractions);
+    FractionInterface subtractFractions(List<FractionInterface> fractions);
+    FractionInterface getFraction(int index);
+    int size();
+}
+
+class Fraction implements FractionInterface {
+    private int numerator;
+    private int denominator;
+
+    public Fraction(int numerator, int denominator) {
+        this.numerator = numerator;
+        this.denominator = denominator;
+    }
 
     @Override
-    public void cautaSubsirRegexSiAfiseaza(String regex) {
-        Pattern pattern = Pattern.compile(regex, Pattern.CASE_INSENSITIVE);
-        Matcher matcher = pattern.matcher(this.getContinut());
+    public void enterFraction(Scanner scanner) {
+        System.out.print("Enter numerator: ");
+        numerator = scanner.nextInt();
+        System.out.print("Enter denominator: ");
+        denominator = scanner.nextInt();
+    }
 
-        while (matcher.find()) {
-            System.out.println("În textul: " + this.getContinut());
-            System.out.println("Subșirul găsit: " + matcher.group());
-            System.out.println();
-        }
+    @Override
+    public void displayFraction() {
+        System.out.println(numerator + "/" + denominator);
+    }
+
+    @Override
+    public FractionInterface add(FractionInterface other) {
+        Fraction f = (Fraction) other;
+        int resultNumerator = this.numerator * f.denominator + f.numerator * this.denominator;
+        int resultDenominator = this.denominator * f.denominator;
+        return new Fraction(resultNumerator, resultDenominator).simplify();
+    }
+
+    @Override
+    public FractionInterface subtract(FractionInterface other) {
+        Fraction f = (Fraction) other;
+        int resultNumerator = this.numerator * f.denominator - f.numerator * this.denominator;
+        int resultDenominator = this.denominator * f.denominator;
+        return new Fraction(resultNumerator, resultDenominator).simplify();
+    }
+
+    private FractionInterface simplify() {
+        int gcd = gcd(numerator, denominator);
+        return new Fraction(numerator / gcd, denominator / gcd);
+    }
+
+    private int gcd(int a, int b) {
+        return b == 0 ? a : gcd(b, a % b);
     }
 }
 
-class Propoz extends ElementTextualAbstract {
-    private String continut;
+class FractionArray implements FractionArrayInterface {
+    private FractionInterface[] fractions;
+    private int size;
+    private int currentIndex;
 
-    public Propoz() {
-        this.continut = null;
-    }
-
-    public Propoz(String continut) {
-        this.continut = continut;
-    }
-
-    public Propoz(String continut, int n) {
-        this.continut = continut.substring(0, Math.min(n, continut.length()));
+    public FractionArray(int size) {
+        this.size = size;
+        fractions = new FractionInterface[size];
+        currentIndex = 0;
     }
 
     @Override
-    public String getContinut() {
-        return continut;
-    }
-
-    @Override
-    public String afiseaza() {
-        return "(prop=\"" + continut + "\")";
-    }
-
-    @Override
-    public void setContinut(String continut) {
-        this.continut = continut;
-    }
-
-    @Override
-    public String toString() {
-        return "(prop=\"" + continut + "\")";
-    }
-}
-
-abstract class Paragraf extends ElementTextualAbstract {
-    abstract void adaugaPropozitie(Propoz propoz);
-}
-
-class ParagrafConcret extends Paragraf {
-    private Propoz[] prop;
-
-    public ParagrafConcret() {
-        this.prop = null;
-    }
-
-    @Override
-    void adaugaPropozitie(Propoz propoz) {
-        if (prop == null) {
-            prop = new Propoz[1];
-            prop[0] = propoz;
+    public void addFraction(FractionInterface fraction) {
+        if (currentIndex < size) {
+            fractions[currentIndex++] = fraction;
         } else {
-            Propoz[] temp = new Propoz[prop.length + 1];
-            System.arraycopy(prop, 0, temp, 0, prop.length);
-            temp[prop.length] = propoz;
-            prop = temp;
+            System.out.println("Array is full. Cannot add more fractions.");
         }
-    }
-
-    public Propoz[] getProp() {
-        return prop;
     }
 
     @Override
-    String getContinut() {
-        StringBuilder sb = new StringBuilder();
-        for (Propoz p : prop) {
-            sb.append(p.getContinut()).append(" ");
+    public void displayArray() {
+        System.out.println("Fraction Array:");
+        for (int i = 0; i < currentIndex; i++) {
+            System.out.print("[" + i + "] ");
+            fractions[i].displayFraction();
         }
-        return sb.toString().trim();
     }
 
     @Override
-    public String afiseaza() {
-        StringBuilder output = new StringBuilder();
-        output.append("(");
-        for (Propoz t : prop) {
-            output.append(t).append(",");
-        }
-        output.append(getContinut());
-        output.append(")");
-        return output.toString();
-    }
-
-    @Override
-    public void setContinut(String continut) {
-        if (prop != null && prop.length > 0) {
-            prop[0].setContinut(continut);
-        }
-    }
-}
-
-class Pagina {
-    private Paragraf[] paragList;
-
-    public Pagina(Paragraf[] paragList) {
-        this.paragList = paragList;
-    }
-
-    public void afiseazaPagina() {
-        StringBuilder output = new StringBuilder("Pagina:\n");
-        for (Paragraf parag : paragList) {
-            if (parag instanceof ParagrafConcret) {
-                Propoz[] propozitii = ((ParagrafConcret) parag).getProp();
-                for (Propoz propoz : propozitii) {
-                    output.append(propoz.getContinut()).append(" ");
-                }
-                output.append("\n");
-            } else {
-                output.append(parag.toString()).append("\n");
+    public FractionInterface sumFractions(List<FractionInterface> fractions) {
+        FractionInterface sum = new Fraction(0, 1);
+        for (FractionInterface fraction : fractions) {
+            if (fraction != null) {
+                sum = sum.add(fraction);
             }
         }
-        System.out.println(output.toString());
+        return sum;
     }
 
-    public void cautaSubsirRegexSiAfiseaza(String regex) {
-        for (Paragraf parag : paragList) {
-            parag.cautaSubsirRegexSiAfiseaza(regex);
+    @Override
+    public FractionInterface subtractFractions(List<FractionInterface> fractions) {
+        FractionInterface result = fractions.get(0);
+        for (int i = 1; i < fractions.size(); i++) {
+            if (fractions.get(i) != null) {
+                result = result.subtract(fractions.get(i));
+            }
         }
+        return result;
+    }
+
+    @Override
+    public FractionInterface getFraction(int index) {
+        if (index >= 0 && index < currentIndex) {
+            return fractions[index];
+        }
+        return null;
+    }
+
+    @Override
+    public int size() {
+        return currentIndex;
     }
 }
 
 public class Main {
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
-        Paragraf[] paragList = null;
+        FractionArrayInterface fractionArray = new FractionArray(5);
 
-        while (true) {
-            System.out.println("==================MENU===================");
-            System.out.println("1. Creare paragraf și adăugare propoziții");
-            System.out.println("2. Afisare pagina");
-            System.out.println("3. Cautare subșir cu expresii regulate");
-            System.out.println("0. Ieșire");
-            System.out.println("=========================================");
+        int choice;
+        do {
+            displayMenu();
+            System.out.print("Enter your choice: ");
+            choice = scanner.nextInt();
 
-            int optiune = scanner.nextInt();
-            scanner.nextLine();
-
-            switch (optiune) {
+            switch (choice) {
                 case 1:
-                    System.out.println("Numărul de paragrafe:");
-                    int numParag = scanner.nextInt();
-                    scanner.nextLine();
-
-                    paragList = new Paragraf[numParag];
-                    for (int i = 0; i < numParag; i++) {
-                        System.out.println("Paragraf " + (i + 1));
-                        paragList[i] = new ParagrafConcret();
-
-                        for (int j = 0; j < 3; j++) {
-                            System.out.println("Dati propozitia:");
-                            String propozitie = scanner.nextLine();
-                            System.out.println("Numărul de caractere:");
-                            int n = scanner.nextInt();
-                            scanner.nextLine();
-                            Propoz propoz = new Propoz(propozitie, n);
-                            ((ParagrafConcret) paragList[i]).adaugaPropozitie(propoz);
-                        }
-                    }
+                    addMultipleFractions(scanner, fractionArray);
                     break;
                 case 2:
-                    if (paragList != null) {
-                        Pagina pagina = new Pagina(paragList);
-                        pagina.afiseazaPagina();
-                    } else {
-                        System.out.println("Creați mai întâi paragrafele!");
-                    }
+                    fractionArray.displayArray();
                     break;
                 case 3:
-                    if (paragList != null) {
-                        System.out.println("Introduceți șablonul de căutare cu expresii regulate:");
-                        String regex = scanner.nextLine();
-                        Pagina pagina = new Pagina(paragList);
-                        pagina.cautaSubsirRegexSiAfiseaza(regex);
-                    } else {
-                        System.out.println("Creați mai întâi paragrafele!");
-                    }
+                    performOperations(scanner, fractionArray);
                     break;
-                case 0:
-                    System.out.println("La revedere!");
-                    scanner.close();
-                    System.exit(0);
+                case 4:
+                    System.out.println("Exiting...");
+                    break;
                 default:
-                    System.out.println("Opțiune invalidă! Selectați o opțiune validă");
-                    break;
+                    System.out.println("Invalid choice. Please try again.");
             }
+            scanner.nextLine(); // Consume newline character
+        } while (choice != 4);
+    }
+
+    private static void displayMenu() {
+        System.out.println("============MENU===========");
+        System.out.println("1. Enter Multiple Fractions");
+        System.out.println("2. Display Fraction Array");
+        System.out.println("3. Perform Operations");
+        System.out.println("4. Exit");
+        System.out.println("===========================");
+    }
+
+    private static void addMultipleFractions(Scanner scanner, FractionArrayInterface fractionArray) {
+        System.out.print("Enter the number of fractions to add: ");
+        int numFractions = scanner.nextInt();
+
+        for (int i = 0; i < numFractions; i++) {
+            FractionInterface newFraction = new Fraction(0, 1);
+            newFraction.enterFraction(scanner);
+            fractionArray.addFraction(newFraction);
+        }
+    }
+
+    private static void performOperations(Scanner scanner, FractionArrayInterface fractionArray) {
+        System.out.println("Choose fractions to perform operations (separated by spaces):");
+        fractionArray.displayArray();
+        System.out.print("Enter the indices of the fractions: ");
+        scanner.nextLine(); // Consume newline character
+        String indicesInput = scanner.nextLine();
+        String[] indicesArray = indicesInput.split(" ");
+
+        List<FractionInterface> selectedFractions = new ArrayList<>();
+        for (String indexStr : indicesArray) {
+            int index = Integer.parseInt(indexStr);
+            if (index >= 0 && index < fractionArray.size()) {
+                FractionInterface fraction = fractionArray.getFraction(index);
+                selectedFractions.add(fraction);
+            } else {
+                System.out.println("Invalid fraction index: " + index);
+                return; // Stop operations if any index is invalid
+            }
+        }
+
+        if (selectedFractions.size() >= 2) {
+            System.out.println("Performing operations between selected fractions...");
+            System.out.println("1. Add Fractions");
+            System.out.println("2. Subtract Fractions");
+            System.out.print("Enter your choice: ");
+            int operationChoice = scanner.nextInt();
+
+            switch (operationChoice) {
+                case 1:
+                    FractionInterface sum = fractionArray.sumFractions(selectedFractions);
+                    System.out.print("Result of addition: ");
+                    sum.displayFraction();
+                    break;
+                case 2:
+                    FractionInterface difference = fractionArray.subtractFractions(selectedFractions);
+                    System.out.print("Result of subtraction: ");
+                    difference.displayFraction();
+                    break;
+                default:
+                    System.out.println("Invalid operation choice.");
+            }
+        } else {
+            System.out.println("Insufficient fractions selected. Please select at least 2 fractions.");
         }
     }
 }
