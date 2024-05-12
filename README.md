@@ -1,4 +1,4 @@
-# Lab 4
-Realizarea polimorfismului pentru clasele date cu crearea metodelor conform specificului claselor.<br>
-3. Fraction <- FracionArray.
+# Lab 5
+De realizat variantele date folosind exceptiele.<br>
+Sa se creeze o stivă complectată cu cîmpurile înregistrării. Organizaţi acces direct la elementele înregistrării.
 
