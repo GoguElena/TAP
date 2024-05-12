@@ -1,4 +1,4 @@
-# Lab 5
-De realizat variantele date folosind exceptiele.<br>
-Sa se creeze o stivă complectată cu cîmpurile înregistrării. Organizaţi acces direct la elementele înregistrării.
+# Lab 7
+De realizat sarcinile utilizînd colecţiile:<br>
+Defini o clasă Set bazată colecţii pentru un set de numere întregi, Creaţi metodele de determinare a uniunii şi intersectiei de seturi .
 
